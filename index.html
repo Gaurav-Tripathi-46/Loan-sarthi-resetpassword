@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Reset Password - App Name</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Your existing CSS remains exactly the same */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background-color: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #f97316 0%, #dc2626 100%);
+            padding: 48px 24px 24px 24px;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .back-button {
+            margin-bottom: 24px;
+        }
+
+        .back-button a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            opacity: 0.9;
+        }
+
+        .back-button a:hover {
+            opacity: 1;
+        }
+
+        .header-content {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .icon-circle {
+            background-color: rgba(255,255,255,0.2);
+            width: 72px;
+            height: 72px;
+            border-radius: 36px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 16px auto;
+        }
+
+        h1 {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+        }
+
+        /* Content */
+        .content {
+            padding: 32px 24px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .label {
+            color: #1f2937;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .hint {
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: center;
+            background-color: #f9fafb;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: all 0.2s;
+        }
+
+        .input-container.error {
+            border-color: #ef4444;
+        }
+
+        .input-container:focus-within {
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+
+        .input-icon {
+            width: 20px;
+            height: 20px;
+            color: #6b7280;
+        }
+
+        input {
+            flex: 1;
+            margin-left: 12px;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #111827;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: #9ca3af;
+        }
+
+        .eye-button {
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .error-text {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        /* Password strength */
+        .strength-container {
+            margin-top: 12px;
+        }
+
+        .strength-bar {
+            height: 6px;
+            background-color: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s;
+        }
+
+        .strength-text {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Requirements box */
+        .requirements-box {
+            background-color: #fff7ed;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .requirements-title {
+            color: #9a3412;
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .requirement-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .check-icon {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #9ca3af;
+            border-radius: 50%;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .check-icon.valid {
+            background-color: #10b981;
+            border-color: #10b981;
+        }
+
+        .check-icon.valid::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .requirement-text {
+            color: #92400e;
+            font-size: 12px;
+        }
+
+        /* Button */
+        .reset-button {
+            width: 100%;
+            background-color: #f97316;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-bottom: 24px;
+        }
+
+        .reset-button:hover:not(:disabled) {
+            background-color: #ea580c;
+        }
+
+        .reset-button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Security note */
+        .security-note {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .security-note p {
+            color: #4b5563;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        /* Loading states */
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+            background: white;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #f97316;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #4b5563;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .error-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .error-title {
+            color: #dc2626;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .error-message {
+            color: #4b5563;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .login-button {
+            background-color: #f97316;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Config error styling */
+        .config-error {
+            padding: 20px;
+            text-align: center;
+            background: #fee2e2;
+            border-radius: 8px;
+            margin: 20px;
+        }
+        .config-error h2 {
+            color: #dc2626;
+            margin-bottom: 10px;
+        }
+        .config-error p {
+            color: #4b5563;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Configuration Error State (shown if env vars missing) -->
+        <div id="configError" class="config-error hidden">
+            <h2>Configuration Error</h2>
+            <p>Application is not properly configured. Please check environment variables.</p>
+            <button onclick="window.location.reload()" class="login-button">Retry</button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingScreen" class="loading-screen">
+            <div class="spinner"></div>
+            <p class="loading-text">Verifying your session...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorScreen" class="error-screen hidden">
+            <h2 class="error-title" id="errorTitle">Session Expired</h2>
+            <p class="error-message" id="errorMessage">Your password reset link has expired. Please request a new one.</p>
+            <a href="/login" class="login-button" id="loginRedirectBtn">Go to Login</a>
+        </div>
+
+        <!-- Main Reset Password Form -->
+        <div id="resetForm" class="hidden">
+            <div class="header">
+                <div class="back-button">
+                    <a href="#" id="backBtn">← Back to Login</a>
+                </div>
+                <div class="header-content">
+                    <div class="icon-circle">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <h1>Set New Password</h1>
+                    <p class="subtitle" id="userEmail"></p>
+                </div>
+            </div>
+
+            <div class="content">
+                <!-- New Password -->
+                <div class="form-group">
+                    <div class="label-row">
+                        <span class="label">New Password</span>
+                        <span class="hint">Min. 8 characters</span>
+                    </div>
+                    
+                    <div class="input-container" id="newPasswordContainer">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <input 
+                            type="password" 
+                            id="newPassword" 
+                            placeholder="Enter new password"
+                            autocomplete="new-password"
+                        >
+                        <button type="button" class="eye-button" onclick="togglePassword('newPassword')">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div id="newPasswordError" class="error-text"></div>
+
+                    <!-- Password Strength -->
+                    <div class="strength-container hidden" id="strengthIndicator">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthBar"></div>
+                        </div>
+                        <span class="strength-text" id="strengthText"></span>
+                    </div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="form-group">
+                    <span class="label">Confirm Password</span>
+                    
+                    <div class="input-container" id="confirmPasswordContainer">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <input 
+                            type="password" 
+                            id="confirmPassword" 
+                            placeholder="Confirm new password"
+                            autocomplete="new-password"
+                        >
+                        <button type="button" class="eye-button" onclick="togglePassword('confirmPassword')">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div id="confirmPasswordError" class="error-text"></div>
+
+                    <!-- Requirements Box -->
+                    <div class="requirements-box">
+                        <p class="requirements-title">✓ Password requirements:</p>
+                        <div class="requirement-item">
+                            <span class="check-icon" id="lengthCheck"></span>
+                            <span class="requirement-text">At least 8 characters</span>
+                        </div>
+                        <div class="requirement-item">
+                            <span class="check-icon" id="matchCheck"></span>
+                            <span class="requirement-text">Passwords match</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reset Button -->
+                <button class="reset-button" id="resetBtn" onclick="handleResetPassword()">
+                    Reset Password
+                </button>
+
+                <!-- Security Note -->
+                <div class="security-note">
+                    <p>🔒 This is a secure area. Never share your password with anyone.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Environment variables configuration
+        // These will be replaced by Vercel during build time
+        window.env = {
+            SUPABASE_URL: '__SUPABASE_URL__',
+            SUPABASE_ANON_KEY: '__SUPABASE_ANON_KEY__'
+        };
+
+        // DOM Elements
+        const configError = document.getElementById('configError');
+        const loadingScreen = document.getElementById('loadingScreen');
+        const errorScreen = document.getElementById('errorScreen');
+        const resetForm = document.getElementById('resetForm');
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const resetBtn = document.getElementById('resetBtn');
+        const userEmailSpan = document.getElementById('userEmail');
+
+        // State
+        let session = null;
+        let accessToken = null;
+        let supabase = null;
+
+        // Validate environment variables
+        function validateEnv() {
+            const url = window.env.SUPABASE_URL;
+            const key = window.env.SUPABASE_ANON_KEY;
+            
+            // Check if variables are still placeholders or empty
+            if (!url || url.includes('__SUPABASE_URL__') || url === 'YOUR_SUPABASE_URL') {
+                console.error('SUPABASE_URL is not properly configured');
+                return false;
+            }
+            
+            if (!key || key.includes('__SUPABASE_ANON_KEY__') || key === 'YOUR_SUPABASE_ANON_KEY') {
+                console.error('SUPABASE_ANON_KEY is not properly configured');
+                return false;
+            }
+            
+            // Basic URL validation
+            try {
+                new URL(url);
+            } catch (e) {
+                console.error('SUPABASE_URL is not a valid URL');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Initialize Supabase
+        function initSupabase() {
+            if (!validateEnv()) {
+                loadingScreen.classList.add('hidden');
+                configError.classList.remove('hidden');
+                return false;
+            }
+            
+            try {
+                supabase = window.supabase.createClient(
+                    window.env.SUPABASE_URL,
+                    window.env.SUPABASE_ANON_KEY,
+                    {
+                        auth: {
+                            autoRefreshToken: true,
+                            persistSession: true,
+                            detectSessionInUrl: true
+                        }
+                    }
+                );
+                return true;
+            } catch (error) {
+                console.error('Failed to initialize Supabase:', error);
+                loadingScreen.classList.add('hidden');
+                configError.classList.remove('hidden');
+                return false;
+            }
+        }
+
+        // Check session on load
+        window.addEventListener('load', async () => {
+            if (initSupabase()) {
+                await handleIncomingLink();
+            }
+        });
+
+        // Handle incoming password reset link
+        async function handleIncomingLink() {
+            try {
+                // Get URL parameters
+                const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                const queryParams = new URLSearchParams(window.location.search);
+                
+                // Check for access_token in URL (from email link)
+                const access_token = hashParams.get('access_token') || queryParams.get('access_token');
+                const refresh_token = hashParams.get('refresh_token') || queryParams.get('refresh_token');
+                const type = hashParams.get('type') || queryParams.get('type');
+
+                console.log('URL params:', { type, hasAccessToken: !!access_token });
+
+                if (access_token && type === 'recovery') {
+                    // Set the session from the recovery token
+                    const { data, error } = await supabase.auth.setSession({
+                        access_token,
+                        refresh_token
+                    });
+
+                    if (error) throw error;
+                    
+                    session = data.session;
+                    accessToken = access_token;
+                    
+                    // Show reset form
+                    showResetForm();
+                    
+                } else {
+                    // Check for existing session
+                    const { data: { session: existingSession }, error } = await supabase.auth.getSession();
+                    
+                    if (error) throw error;
+                    
+                    if (existingSession) {
+                        session = existingSession;
+                        accessToken = existingSession.access_token;
+                        showResetForm();
+                    } else {
+                        showError(
+                            'Invalid Session',
+                            'This password reset link is invalid or has expired. Please request a new one.'
+                        );
+                    }
+                }
+            } catch (error) {
+                console.error('Error handling link:', error);
+                showError(
+                    'Authentication Error',
+                    error.message || 'Failed to verify your session. Please try again.'
+                );
+            }
+        }
+
+        // Show reset form
+        function showResetForm() {
+            loadingScreen.classList.add('hidden');
+            resetForm.classList.remove('hidden');
+            
+            // Display user email if available
+            if (session?.user?.email) {
+                userEmailSpan.textContent = `for ${session.user.email}`;
+            }
+            
+            // Add input listeners
+            newPassword.addEventListener('input', validateForm);
+            confirmPassword.addEventListener('input', validateForm);
+            newPassword.addEventListener('input', checkPasswordStrength);
+        }
+
+        // Show error screen
+        function showError(title, message) {
+            loadingScreen.classList.add('hidden');
+            errorScreen.classList.remove('hidden');
+            document.getElementById('errorTitle').textContent = title;
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        // Toggle password visibility
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const type = input.type === 'password' ? 'text' : 'password';
+            input.type = type;
+        }
+
+        // Check password strength
+        function checkPasswordStrength() {
+            const password = newPassword.value;
+            const strengthIndicator = document.getElementById('strengthIndicator');
+            const strengthBar = document.getElementById('strengthBar');
+            const strengthText = document.getElementById('strengthText');
+            
+            if (password.length > 0) {
+                strengthIndicator.classList.remove('hidden');
+                
+                let strength = 0;
+                if (password.length >= 8) strength += 25;
+                if (/[a-z]/.test(password)) strength += 25;
+                if (/[A-Z]/.test(password)) strength += 25;
+                if (/[0-9]/.test(password)) strength += 25;
+                
+                strengthBar.style.width = strength + '%';
+                
+                let color, text;
+                if (strength < 50) {
+                    color = '#ef4444';
+                    text = 'Weak';
+                } else if (strength < 75) {
+                    color = '#f59e0b';
+                    text = 'Medium';
+                } else {
+                    color = '#10b981';
+                    text = 'Strong';
+                }
+                
+                strengthBar.style.backgroundColor = color;
+                strengthBar.style.height = '6px';
+                strengthText.textContent = `Password strength: ${text}`;
+                strengthText.style.color = color;
+            } else {
+                strengthIndicator.classList.add('hidden');
+            }
+            
+            updateRequirements();
+        }
+
+        // Update requirement checkmarks
+        function updateRequirements() {
+            const password = newPassword.value;
+            const confirm = confirmPassword.value;
+            
+            const lengthCheck = document.getElementById('lengthCheck');
+            const matchCheck = document.getElementById('matchCheck');
+            
+            // Length check
+            if (password.length >= 8) {
+                lengthCheck.classList.add('valid');
+            } else {
+                lengthCheck.classList.remove('valid');
+            }
+            
+            // Match check
+            if (password.length > 0 && password === confirm) {
+                matchCheck.classList.add('valid');
+            } else {
+                matchCheck.classList.remove('valid');
+            }
+        }
+
+        // Validate form
+        function validateForm() {
+            const password = newPassword.value;
+            const confirm = confirmPassword.value;
+            let isValid = true;
+            
+            // Validate new password
+            const newPasswordContainer = document.getElementById('newPasswordContainer');
+            const newPasswordError = document.getElementById('newPasswordError');
+            
+            if (password.length < 8) {
+                newPasswordContainer.classList.add('error');
+                newPasswordError.textContent = 'Password must be at least 8 characters';
+                isValid = false;
+            } else {
+                newPasswordContainer.classList.remove('error');
+                newPasswordError.textContent = '';
+            }
+            
+            // Validate confirm password
+            const confirmContainer = document.getElementById('confirmPasswordContainer');
+            const confirmError = document.getElementById('confirmPasswordError');
+            
+            if (confirm.length > 0 && password !== confirm) {
+                confirmContainer.classList.add('error');
+                confirmError.textContent = 'Passwords do not match';
+                isValid = false;
+            } else {
+                confirmContainer.classList.remove('error');
+                confirmError.textContent = '';
+            }
+            
+            // Enable/disable button
+            resetBtn.disabled = !isValid || password.length === 0 || confirm.length === 0;
+            
+            return isValid;
+        }
+
+        // Handle password reset
+        async function handleResetPassword() {
+            if (!validateForm()) return;
+            
+            try {
+                resetBtn.disabled = true;
+                resetBtn.textContent = 'Resetting...';
+                
+                const { error } = await supabase.auth.updateUser({
+                    password: newPassword.value
+                });
+
+                if (error) throw error;
+                
+                // Show success message
+                alert('Password reset successful! You can now login with your new password.');
+                
+                // Sign out and redirect to login
+                await supabase.auth.signOut();
+                window.location.href = '/login.html'; // Change to your login page URL
+                
+            } catch (error) {
+                console.error('Reset error:', error);
+                alert('Failed to reset password: ' + error.message);
+                resetBtn.disabled = false;
+                resetBtn.textContent = 'Reset Password';
+            }
+        }
+
+        // Back button
+        document.getElementById('backBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = '/login.html'; // Change to your login page URL
+        });
+
+        // Login redirect button
+        document.getElementById('loginRedirectBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = '/login.html'; // Change to your login page URL
+        });
+    </script>
+</body>
+</html>

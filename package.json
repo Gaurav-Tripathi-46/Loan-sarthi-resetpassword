@@ -1,0 +1,16 @@
+{
+  "name": "password-reset-page",
+  "version": "1.0.0",
+  "description": "Password reset page with Supabase authentication",
+  "main": "index.html",
+  "scripts": {
+    "dev": "serve .",
+    "build": "echo 'Static site, no build required'"
+  },
+  "keywords": ["supabase", "password-reset", "authentication"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}

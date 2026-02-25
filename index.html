@@ -500,7 +500,6 @@
 
     <script>
         // Environment variables configuration
-        // These will be replaced by Vercel during build time
         window.env = {
             SUPABASE_URL: '__SUPABASE_URL__',
             SUPABASE_ANON_KEY: '__SUPABASE_ANON_KEY__'
@@ -516,17 +515,16 @@
         const resetBtn = document.getElementById('resetBtn');
         const userEmailSpan = document.getElementById('userEmail');
 
-        // State
+        // State - FIXED: Renamed from 'supabase' to 'supabaseClient' to avoid conflict
         let session = null;
         let accessToken = null;
-        let supabase = null;
+        let supabaseClient = null;
 
         // Validate environment variables
         function validateEnv() {
             const url = window.env.SUPABASE_URL;
             const key = window.env.SUPABASE_ANON_KEY;
             
-            // Check if variables are still placeholders or empty
             if (!url || url.includes('__SUPABASE_URL__') || url === 'YOUR_SUPABASE_URL') {
                 console.error('SUPABASE_URL is not properly configured');
                 return false;
@@ -537,7 +535,6 @@
                 return false;
             }
             
-            // Basic URL validation
             try {
                 new URL(url);
             } catch (e) {
@@ -557,7 +554,7 @@
             }
             
             try {
-                supabase = window.supabase.createClient(
+                supabaseClient = window.supabase.createClient(
                     window.env.SUPABASE_URL,
                     window.env.SUPABASE_ANON_KEY,
                     {
@@ -587,11 +584,9 @@
         // Handle incoming password reset link
         async function handleIncomingLink() {
             try {
-                // Get URL parameters
                 const hashParams = new URLSearchParams(window.location.hash.substring(1));
                 const queryParams = new URLSearchParams(window.location.search);
                 
-                // Check for access_token in URL (from email link)
                 const access_token = hashParams.get('access_token') || queryParams.get('access_token');
                 const refresh_token = hashParams.get('refresh_token') || queryParams.get('refresh_token');
                 const type = hashParams.get('type') || queryParams.get('type');
@@ -599,8 +594,7 @@
                 console.log('URL params:', { type, hasAccessToken: !!access_token });
 
                 if (access_token && type === 'recovery') {
-                    // Set the session from the recovery token
-                    const { data, error } = await supabase.auth.setSession({
+                    const { data, error } = await supabaseClient.auth.setSession({
                         access_token,
                         refresh_token
                     });
@@ -609,13 +603,10 @@
                     
                     session = data.session;
                     accessToken = access_token;
-                    
-                    // Show reset form
                     showResetForm();
                     
                 } else {
-                    // Check for existing session
-                    const { data: { session: existingSession }, error } = await supabase.auth.getSession();
+                    const { data: { session: existingSession }, error } = await supabaseClient.auth.getSession();
                     
                     if (error) throw error;
                     
@@ -644,12 +635,10 @@
             loadingScreen.classList.add('hidden');
             resetForm.classList.remove('hidden');
             
-            // Display user email if available
             if (session?.user?.email) {
                 userEmailSpan.textContent = `for ${session.user.email}`;
             }
             
-            // Add input listeners
             newPassword.addEventListener('input', validateForm);
             confirmPassword.addEventListener('input', validateForm);
             newPassword.addEventListener('input', checkPasswordStrength);
@@ -666,8 +655,7 @@
         // Toggle password visibility
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
-            const type = input.type === 'password' ? 'text' : 'password';
-            input.type = type;
+            input.type = input.type === 'password' ? 'text' : 'password';
         }
 
         // Check password strength
@@ -719,14 +707,12 @@
             const lengthCheck = document.getElementById('lengthCheck');
             const matchCheck = document.getElementById('matchCheck');
             
-            // Length check
             if (password.length >= 8) {
                 lengthCheck.classList.add('valid');
             } else {
                 lengthCheck.classList.remove('valid');
             }
             
-            // Match check
             if (password.length > 0 && password === confirm) {
                 matchCheck.classList.add('valid');
             } else {
@@ -740,7 +726,6 @@
             const confirm = confirmPassword.value;
             let isValid = true;
             
-            // Validate new password
             const newPasswordContainer = document.getElementById('newPasswordContainer');
             const newPasswordError = document.getElementById('newPasswordError');
             
@@ -753,7 +738,6 @@
                 newPasswordError.textContent = '';
             }
             
-            // Validate confirm password
             const confirmContainer = document.getElementById('confirmPasswordContainer');
             const confirmError = document.getElementById('confirmPasswordError');
             
@@ -766,7 +750,6 @@
                 confirmError.textContent = '';
             }
             
-            // Enable/disable button
             resetBtn.disabled = !isValid || password.length === 0 || confirm.length === 0;
             
             return isValid;
@@ -780,18 +763,16 @@
                 resetBtn.disabled = true;
                 resetBtn.textContent = 'Resetting...';
                 
-                const { error } = await supabase.auth.updateUser({
+                const { error } = await supabaseClient.auth.updateUser({
                     password: newPassword.value
                 });
 
                 if (error) throw error;
                 
-                // Show success message
                 alert('Password reset successful! You can now login with your new password.');
                 
-                // Sign out and redirect to login
-                await supabase.auth.signOut();
-                window.location.href = '/login.html'; // Change to your login page URL
+                await supabaseClient.auth.signOut();
+                window.location.href = '/login.html';
                 
             } catch (error) {
                 console.error('Reset error:', error);
@@ -804,13 +785,13 @@
         // Back button
         document.getElementById('backBtn').addEventListener('click', (e) => {
             e.preventDefault();
-            window.location.href = '/login.html'; // Change to your login page URL
+            window.location.href = '/login.html';
         });
 
         // Login redirect button
         document.getElementById('loginRedirectBtn').addEventListener('click', (e) => {
             e.preventDefault();
-            window.location.href = '/login.html'; // Change to your login page URL
+            window.location.href = '/login.html';
         });
     </script>
 </body>

@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Reset Password - App Name</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+
     <style>
         /* Your existing CSS remains exactly the same */
         * {
@@ -27,7 +30,7 @@
             max-width: 400px;
             background-color: white;
             min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
         }
 
         /* Header */
@@ -63,7 +66,7 @@
         }
 
         .icon-circle {
-            background-color: rgba(255,255,255,0.2);
+            background-color: rgba(255, 255, 255, 0.2);
             width: 72px;
             height: 72px;
             border-radius: 36px;
@@ -81,7 +84,7 @@
         }
 
         .subtitle {
-            color: rgba(255,255,255,0.9);
+            color: rgba(255, 255, 255, 0.9);
             font-size: 14px;
         }
 
@@ -302,8 +305,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .loading-text {
@@ -359,16 +367,19 @@
             border-radius: 8px;
             margin: 20px;
         }
+
         .config-error h2 {
             color: #dc2626;
             margin-bottom: 10px;
         }
+
         .config-error p {
             color: #4b5563;
             margin-bottom: 15px;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Configuration Error State (shown if env vars missing) -->
@@ -387,7 +398,8 @@
         <!-- Error State -->
         <div id="errorScreen" class="error-screen hidden">
             <h2 class="error-title" id="errorTitle">Session Expired</h2>
-            <p class="error-message" id="errorMessage">Your password reset link has expired. Please request a new one.</p>
+            <p class="error-message" id="errorMessage">Your password reset link has expired. Please request a new one.
+            </p>
             <a href="/login" class="login-button" id="loginRedirectBtn">Go to Login</a>
         </div>
 
@@ -400,7 +412,7 @@
                 <div class="header-content">
                     <div class="icon-circle">
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                         </svg>
                     </div>
                     <h1>Set New Password</h1>
@@ -415,26 +427,23 @@
                         <span class="label">New Password</span>
                         <span class="hint">Min. 8 characters</span>
                     </div>
-                    
+
                     <div class="input-container" id="newPasswordContainer">
                         <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                         </svg>
-                        <input 
-                            type="password" 
-                            id="newPassword" 
-                            placeholder="Enter new password"
-                            autocomplete="new-password"
-                        >
+                        <input type="password" id="newPassword" placeholder="Enter new password"
+                            autocomplete="new-password">
                         <button type="button" class="eye-button" onclick="togglePassword('newPassword')">
-                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                <circle cx="12" cy="12" r="3"/>
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
                             </svg>
                         </button>
                     </div>
-                    
+
                     <div id="newPasswordError" class="error-text"></div>
 
                     <!-- Password Strength -->
@@ -449,26 +458,23 @@
                 <!-- Confirm Password -->
                 <div class="form-group">
                     <span class="label">Confirm Password</span>
-                    
+
                     <div class="input-container" id="confirmPasswordContainer">
                         <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                         </svg>
-                        <input 
-                            type="password" 
-                            id="confirmPassword" 
-                            placeholder="Confirm new password"
-                            autocomplete="new-password"
-                        >
+                        <input type="password" id="confirmPassword" placeholder="Confirm new password"
+                            autocomplete="new-password">
                         <button type="button" class="eye-button" onclick="togglePassword('confirmPassword')">
-                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                <circle cx="12" cy="12" r="3"/>
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
                             </svg>
                         </button>
                     </div>
-                    
+
                     <div id="confirmPasswordError" class="error-text"></div>
 
                     <!-- Requirements Box -->
@@ -501,8 +507,17 @@
     <script>
         // Environment variables configuration
         window.env = {
-            SUPABASE_URL: '__SUPABASE_URL__',
-            SUPABASE_ANON_KEY: '__SUPABASE_ANON_KEY__'
+            SUPABASE_URL:
+                // Try Vercel system env
+                (typeof process !== 'undefined' && process.env && process.env.SUPABASE_URL) ||
+                // Try window.__ENV (sometimes used)
+                (window.__ENV && window.__ENV.SUPABASE_URL) ||
+                // Fallback
+                null,
+            SUPABASE_ANON_KEY:
+                (typeof process !== 'undefined' && process.env && process.env.SUPABASE_ANON_KEY) ||
+                (window.__ENV && window.__ENV.SUPABASE_ANON_KEY) ||
+                null
         };
 
         // DOM Elements
@@ -524,24 +539,24 @@
         function validateEnv() {
             const url = window.env.SUPABASE_URL;
             const key = window.env.SUPABASE_ANON_KEY;
-            
+
             if (!url || url.includes('__SUPABASE_URL__') || url === 'YOUR_SUPABASE_URL') {
                 console.error('SUPABASE_URL is not properly configured');
                 return false;
             }
-            
+
             if (!key || key.includes('__SUPABASE_ANON_KEY__') || key === 'YOUR_SUPABASE_ANON_KEY') {
                 console.error('SUPABASE_ANON_KEY is not properly configured');
                 return false;
             }
-            
+
             try {
                 new URL(url);
             } catch (e) {
                 console.error('SUPABASE_URL is not a valid URL');
                 return false;
             }
-            
+
             return true;
         }
 
@@ -552,7 +567,7 @@
                 configError.classList.remove('hidden');
                 return false;
             }
-            
+
             try {
                 supabaseClient = window.supabase.createClient(
                     window.env.SUPABASE_URL,
@@ -586,7 +601,7 @@
             try {
                 const hashParams = new URLSearchParams(window.location.hash.substring(1));
                 const queryParams = new URLSearchParams(window.location.search);
-                
+
                 const access_token = hashParams.get('access_token') || queryParams.get('access_token');
                 const refresh_token = hashParams.get('refresh_token') || queryParams.get('refresh_token');
                 const type = hashParams.get('type') || queryParams.get('type');
@@ -600,16 +615,16 @@
                     });
 
                     if (error) throw error;
-                    
+
                     session = data.session;
                     accessToken = access_token;
                     showResetForm();
-                    
+
                 } else {
                     const { data: { session: existingSession }, error } = await supabaseClient.auth.getSession();
-                    
+
                     if (error) throw error;
-                    
+
                     if (existingSession) {
                         session = existingSession;
                         accessToken = existingSession.access_token;
@@ -634,11 +649,11 @@
         function showResetForm() {
             loadingScreen.classList.add('hidden');
             resetForm.classList.remove('hidden');
-            
+
             if (session?.user?.email) {
                 userEmailSpan.textContent = `for ${session.user.email}`;
             }
-            
+
             newPassword.addEventListener('input', validateForm);
             confirmPassword.addEventListener('input', validateForm);
             newPassword.addEventListener('input', checkPasswordStrength);
@@ -664,18 +679,18 @@
             const strengthIndicator = document.getElementById('strengthIndicator');
             const strengthBar = document.getElementById('strengthBar');
             const strengthText = document.getElementById('strengthText');
-            
+
             if (password.length > 0) {
                 strengthIndicator.classList.remove('hidden');
-                
+
                 let strength = 0;
                 if (password.length >= 8) strength += 25;
                 if (/[a-z]/.test(password)) strength += 25;
                 if (/[A-Z]/.test(password)) strength += 25;
                 if (/[0-9]/.test(password)) strength += 25;
-                
+
                 strengthBar.style.width = strength + '%';
-                
+
                 let color, text;
                 if (strength < 50) {
                     color = '#ef4444';
@@ -687,7 +702,7 @@
                     color = '#10b981';
                     text = 'Strong';
                 }
-                
+
                 strengthBar.style.backgroundColor = color;
                 strengthBar.style.height = '6px';
                 strengthText.textContent = `Password strength: ${text}`;
@@ -695,7 +710,7 @@
             } else {
                 strengthIndicator.classList.add('hidden');
             }
-            
+
             updateRequirements();
         }
 
@@ -703,16 +718,16 @@
         function updateRequirements() {
             const password = newPassword.value;
             const confirm = confirmPassword.value;
-            
+
             const lengthCheck = document.getElementById('lengthCheck');
             const matchCheck = document.getElementById('matchCheck');
-            
+
             if (password.length >= 8) {
                 lengthCheck.classList.add('valid');
             } else {
                 lengthCheck.classList.remove('valid');
             }
-            
+
             if (password.length > 0 && password === confirm) {
                 matchCheck.classList.add('valid');
             } else {
@@ -725,10 +740,10 @@
             const password = newPassword.value;
             const confirm = confirmPassword.value;
             let isValid = true;
-            
+
             const newPasswordContainer = document.getElementById('newPasswordContainer');
             const newPasswordError = document.getElementById('newPasswordError');
-            
+
             if (password.length < 8) {
                 newPasswordContainer.classList.add('error');
                 newPasswordError.textContent = 'Password must be at least 8 characters';
@@ -737,10 +752,10 @@
                 newPasswordContainer.classList.remove('error');
                 newPasswordError.textContent = '';
             }
-            
+
             const confirmContainer = document.getElementById('confirmPasswordContainer');
             const confirmError = document.getElementById('confirmPasswordError');
-            
+
             if (confirm.length > 0 && password !== confirm) {
                 confirmContainer.classList.add('error');
                 confirmError.textContent = 'Passwords do not match';
@@ -749,31 +764,31 @@
                 confirmContainer.classList.remove('error');
                 confirmError.textContent = '';
             }
-            
+
             resetBtn.disabled = !isValid || password.length === 0 || confirm.length === 0;
-            
+
             return isValid;
         }
 
         // Handle password reset
         async function handleResetPassword() {
             if (!validateForm()) return;
-            
+
             try {
                 resetBtn.disabled = true;
                 resetBtn.textContent = 'Resetting...';
-                
+
                 const { error } = await supabaseClient.auth.updateUser({
                     password: newPassword.value
                 });
 
                 if (error) throw error;
-                
+
                 alert('Password reset successful! You can now login with your new password.');
-                
+
                 await supabaseClient.auth.signOut();
                 window.location.href = '/login.html';
-                
+
             } catch (error) {
                 console.error('Reset error:', error);
                 alert('Failed to reset password: ' + error.message);
@@ -795,4 +810,5 @@
         });
     </script>
 </body>
+
 </html>

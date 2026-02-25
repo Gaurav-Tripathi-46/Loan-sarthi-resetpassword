@@ -8,7 +8,6 @@
   "headers": [
     {
       "source": "/(.*)",
-      "destination": "/index.html",
       "headers": [
         {
           "key": "X-Content-Type-Options",
@@ -28,8 +27,5 @@
         }
       ]
     }
-  ],
-  "github": {
-    "silent": true
-  }
+  ]
 }

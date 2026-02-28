@@ -7,21 +7,8 @@
     <title>Reset Password - App Name</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- 
-        IMPORTANT: Environment variables are injected by Vercel during build time.
-        These will be replaced with actual values from Vercel Environment Variables.
-        Do NOT edit these placeholders - they will be automatically replaced.
-    -->
-    <script>
-        // Vercel will inject these during build time if you use a build command
-        window.env = {
-            SUPABASE_URL: JSON.parse('{"SUPABASE_URL":"%SUPABASE_URL%"}').SUPABASE_URL,
-            SUPABASE_ANON_KEY: JSON.parse('{"SUPABASE_ANON_KEY":"%SUPABASE_ANON_KEY%"}').SUPABASE_ANON_KEY
-        };
-    </script>
-
     <style>
-        /* Your existing CSS remains exactly the same */
+        /* Your existing CSS remains exactly the same - keeping it concise here */
         * {
             margin: 0;
             padding: 0;
@@ -390,21 +377,16 @@
             margin-bottom: 15px;
         }
 
-        /* Debug panel styles */
+        /* Debug panel */
         #debugPanel {
             font-family: monospace;
-            transition: all 0.3s ease;
-        }
-
-        #debugPanel button:hover {
-            background-color: #6b7280 !important;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <!-- Configuration Error State (shown if env vars missing) -->
+        <!-- Configuration Error State -->
         <div id="configError" class="config-error hidden">
             <h2>Configuration Error</h2>
             <p>Application is not properly configured. Please check environment variables.</p>
@@ -526,439 +508,455 @@
         </div>
     </div>
 
-    <script>
-        // ============================================
-        // ENVIRONMENT VARIABLES WITH DEBUG LOGGING
-        // ============================================
+<script>
+    // ============================================
+    // DEBUG PANEL (Optional - Remove after testing)
+    // ============================================
+    function addDebugLog(message, type = 'info') {
+        const debugDiv = document.getElementById('debugPanel');
+        if (debugDiv) {
+            const logEntry = document.createElement('div');
+            logEntry.style.padding = '4px 8px';
+            logEntry.style.margin = '2px 0';
+            logEntry.style.borderRadius = '4px';
+            logEntry.style.fontSize = '12px';
+            logEntry.style.fontFamily = 'monospace';
+            
+            if (type === 'error') {
+                logEntry.style.backgroundColor = '#fee2e2';
+                logEntry.style.color = '#dc2626';
+            } else if (type === 'success') {
+                logEntry.style.backgroundColor = '#dcfce7';
+                logEntry.style.color = '#16a34a';
+            } else {
+                logEntry.style.backgroundColor = '#f3f4f6';
+                logEntry.style.color = '#1f2937';
+            }
+            
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            debugDiv.appendChild(logEntry);
+            debugDiv.scrollTop = debugDiv.scrollHeight;
+        }
+        console.log(message);
+    }
 
-        // Debug panel functions (will be removed after testing)
-        function addDebugLog(message, type = 'info') {
-            const debugDiv = document.getElementById('debugPanel');
-            if (debugDiv) {
-                const logEntry = document.createElement('div');
-                logEntry.style.padding = '4px 8px';
-                logEntry.style.margin = '2px 0';
-                logEntry.style.borderRadius = '4px';
-                logEntry.style.fontSize = '12px';
-                logEntry.style.fontFamily = 'monospace';
+    function createDebugPanel() {
+        if (document.getElementById('debugPanel')) return;
+        
+        const panel = document.createElement('div');
+        panel.id = 'debugPanel';
+        panel.style.position = 'fixed';
+        panel.style.bottom = '0';
+        panel.style.left = '0';
+        panel.style.right = '0';
+        panel.style.maxHeight = '200px';
+        panel.style.overflowY = 'auto';
+        panel.style.backgroundColor = '#1f2937';
+        panel.style.color = '#f9fafb';
+        panel.style.padding = '10px';
+        panel.style.fontSize = '12px';
+        panel.style.zIndex = '10000';
+        panel.style.borderTop = '3px solid #f97316';
+        panel.style.boxShadow = '0 -4px 6px -1px rgba(0,0,0,0.1)';
+        
+        const header = document.createElement('div');
+        header.style.display = 'flex';
+        header.style.justifyContent = 'space-between';
+        header.style.alignItems = 'center';
+        header.style.marginBottom = '8px';
+        header.style.padding = '4px';
+        header.style.backgroundColor = '#374151';
+        header.style.borderRadius = '4px';
+        
+        const title = document.createElement('span');
+        title.textContent = '🔍 Debug Logs';
+        title.style.fontWeight = 'bold';
+        title.style.color = '#f97316';
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '✕';
+        closeBtn.style.backgroundColor = '#4b5563';
+        closeBtn.style.border = 'none';
+        closeBtn.style.color = 'white';
+        closeBtn.style.padding = '2px 8px';
+        closeBtn.style.borderRadius = '4px';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.onclick = () => panel.remove();
+        
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+        panel.appendChild(header);
+        document.body.appendChild(panel);
+    }
 
-                if (type === 'error') {
-                    logEntry.style.backgroundColor = '#fee2e2';
-                    logEntry.style.color = '#dc2626';
-                } else if (type === 'success') {
-                    logEntry.style.backgroundColor = '#dcfce7';
-                    logEntry.style.color = '#16a34a';
-                } else {
-                    logEntry.style.backgroundColor = '#f3f4f6';
-                    logEntry.style.color = '#1f2937';
+    // Initialize debug panel
+    createDebugPanel();
+    addDebugLog('🚀 Debug panel initialized');
+
+    // ============================================
+    // MAIN APPLICATION
+    // ============================================
+    
+    // DOM Elements
+    const configError = document.getElementById('configError');
+    const loadingScreen = document.getElementById('loadingScreen');
+    const errorScreen = document.getElementById('errorScreen');
+    const resetForm = document.getElementById('resetForm');
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const resetBtn = document.getElementById('resetBtn');
+    const userEmailSpan = document.getElementById('userEmail');
+
+    // State
+    let session = null;
+    let accessToken = null;
+    let supabaseClient = null;
+    let configLoaded = false;
+
+    // ============================================
+    // LOAD CONFIGURATION FROM API
+    // ============================================
+    async function loadConfig() {
+        addDebugLog('📦 Loading environment variables from API...');
+        
+        try {
+            // Try multiple possible API paths
+            const apiPaths = ['/api/config', './api/config', 'api/config'];
+            let response = null;
+            let lastError = null;
+            
+            for (const path of apiPaths) {
+                try {
+                    addDebugLog(`🔍 Trying API path: ${path}`);
+                    response = await fetch(path);
+                    if (response.ok) {
+                        addDebugLog(`✅ Connected to API at ${path}`);
+                        break;
+                    }
+                } catch (e) {
+                    lastError = e;
+                    continue;
                 }
-
-                logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-                debugDiv.appendChild(logEntry);
-                debugDiv.scrollTop = debugDiv.scrollHeight;
             }
-            console.log(message);
-        }
-
-        function createDebugPanel() {
-            if (document.getElementById('debugPanel')) return;
-
-            const panel = document.createElement('div');
-            panel.id = 'debugPanel';
-            panel.style.position = 'fixed';
-            panel.style.bottom = '0';
-            panel.style.left = '0';
-            panel.style.right = '0';
-            panel.style.maxHeight = '200px';
-            panel.style.overflowY = 'auto';
-            panel.style.backgroundColor = '#1f2937';
-            panel.style.color = '#f9fafb';
-            panel.style.padding = '10px';
-            panel.style.fontSize = '12px';
-            panel.style.zIndex = '10000';
-            panel.style.borderTop = '3px solid #f97316';
-            panel.style.boxShadow = '0 -4px 6px -1px rgba(0,0,0,0.1)';
-
-            const header = document.createElement('div');
-            header.style.display = 'flex';
-            header.style.justifyContent = 'space-between';
-            header.style.alignItems = 'center';
-            header.style.marginBottom = '8px';
-            header.style.padding = '4px';
-            header.style.backgroundColor = '#374151';
-            header.style.borderRadius = '4px';
-
-            const title = document.createElement('span');
-            title.textContent = '🔍 Debug Logs';
-            title.style.fontWeight = 'bold';
-            title.style.color = '#f97316';
-
-            const closeBtn = document.createElement('button');
-            closeBtn.textContent = '✕';
-            closeBtn.style.backgroundColor = '#4b5563';
-            closeBtn.style.border = 'none';
-            closeBtn.style.color = 'white';
-            closeBtn.style.padding = '2px 8px';
-            closeBtn.style.borderRadius = '4px';
-            closeBtn.style.cursor = 'pointer';
-            closeBtn.onclick = () => panel.remove();
-
-            header.appendChild(title);
-            header.appendChild(closeBtn);
-            panel.appendChild(header);
-            document.body.appendChild(panel);
-        }
-
-        // Initialize debug panel (comment this out after testing)
-        createDebugPanel();
-        addDebugLog('🚀 Debug panel initialized');
-        addDebugLog('📦 Loading environment variables from Vercel...');
-
-        // Check if environment variables were properly injected by Vercel
-        addDebugLog(`🔍 SUPABASE_URL from Vercel: ${window.env.SUPABASE_URL ? '✅ Found' : '❌ Missing'}`);
-        addDebugLog(`🔍 SUPABASE_ANON_KEY from Vercel: ${window.env.SUPABASE_ANON_KEY ? '✅ Found' : '❌ Missing'}`);
-
-        // Show warning if placeholders are still present
-        if (window.env.SUPABASE_URL === '%SUPABASE_URL%') {
-            addDebugLog('⚠️ SUPABASE_URL placeholder not replaced by Vercel', 'error');
-            addDebugLog('📝 Make sure you have added SUPABASE_URL in Vercel Environment Variables', 'error');
-        }
-
-        if (window.env.SUPABASE_ANON_KEY === '%SUPABASE_ANON_KEY%') {
-            addDebugLog('⚠️ SUPABASE_ANON_KEY placeholder not replaced by Vercel', 'error');
-            addDebugLog('📝 Make sure you have added SUPABASE_ANON_KEY in Vercel Environment Variables', 'error');
-        }
-
-        // DOM Elements
-        const configError = document.getElementById('configError');
-        const loadingScreen = document.getElementById('loadingScreen');
-        const errorScreen = document.getElementById('errorScreen');
-        const resetForm = document.getElementById('resetForm');
-        const newPassword = document.getElementById('newPassword');
-        const confirmPassword = document.getElementById('confirmPassword');
-        const resetBtn = document.getElementById('resetBtn');
-        const userEmailSpan = document.getElementById('userEmail');
-
-        // State
-        let session = null;
-        let accessToken = null;
-        let supabaseClient = null;
-
-        // Validate environment variables
-        function validateEnv() {
-            const url = window.env.SUPABASE_URL;
-            const key = window.env.SUPABASE_ANON_KEY;
-
-            // Check if variables are missing
-            if (!url || url === '%SUPABASE_URL%') {
-                addDebugLog('❌ SUPABASE_URL is missing or not replaced by Vercel', 'error');
-                return false;
+            
+            if (!response || !response.ok) {
+                throw new Error('Could not connect to config API: ' + (lastError?.message || 'Unknown error'));
             }
-
-            if (!key || key === '%SUPABASE_ANON_KEY%') {
-                addDebugLog('❌ SUPABASE_ANON_KEY is missing or not replaced by Vercel', 'error');
-                return false;
+            
+            const config = await response.json();
+            
+            // Validate config
+            if (!config.SUPABASE_URL || !config.SUPABASE_ANON_KEY) {
+                throw new Error('API returned incomplete configuration');
             }
+            
+            // Set environment variables
+            window.env = {
+                SUPABASE_URL: config.SUPABASE_URL,
+                SUPABASE_ANON_KEY: config.SUPABASE_ANON_KEY
+            };
+            
+            addDebugLog('✅ Environment variables loaded from API', 'success');
+            addDebugLog(`🔗 URL: ${window.env.SUPABASE_URL.substring(0, 30)}...`);
+            addDebugLog(`🔑 Key: ${window.env.SUPABASE_ANON_KEY ? 'present' : 'missing'}`);
+            
+            configLoaded = true;
+            initializeApp();
+            
+        } catch (error) {
+            addDebugLog(`❌ Failed to load config: ${error.message}`, 'error');
+            showConfigError();
+        }
+    }
 
-            // Validate URL format
-            try {
-                new URL(url);
-                addDebugLog('✅ SUPABASE_URL format is valid', 'success');
-            } catch (e) {
-                addDebugLog(`❌ SUPABASE_URL is not a valid URL: ${url}`, 'error');
-                return false;
-            }
+    function showConfigError() {
+        loadingScreen.classList.add('hidden');
+        configError.classList.remove('hidden');
+        document.getElementById('errorMessage').textContent = 
+            'Failed to load configuration. Please ensure environment variables are set in Vercel.';
+    }
 
-            addDebugLog('✅ Environment variables validated successfully', 'success');
+    // ============================================
+    // APP INITIALIZATION
+    // ============================================
+    function initializeApp() {
+        addDebugLog('🚀 Initializing application...');
+        
+        if (!configLoaded || !window.env) {
+            addDebugLog('❌ Config not loaded', 'error');
+            showConfigError();
+            return;
+        }
+        
+        if (initSupabase()) {
+            handleIncomingLink();
+        }
+    }
+
+    // Initialize Supabase
+    function initSupabase() {
+        addDebugLog('🔄 Initializing Supabase...');
+        
+        try {
+            supabaseClient = window.supabase.createClient(
+                window.env.SUPABASE_URL,
+                window.env.SUPABASE_ANON_KEY,
+                {
+                    auth: {
+                        autoRefreshToken: true,
+                        persistSession: true,
+                        detectSessionInUrl: true
+                    }
+                }
+            );
+            addDebugLog('✅ Supabase client created successfully', 'success');
             return true;
-        }
-
-        // Initialize Supabase
-        function initSupabase() {
-            addDebugLog('🔄 Initializing Supabase...');
-
-            if (!validateEnv()) {
-                loadingScreen.classList.add('hidden');
-                configError.classList.remove('hidden');
-
-                let errorMsg = 'Configuration Error: ';
-                if (!window.env.SUPABASE_URL || window.env.SUPABASE_URL === '%SUPABASE_URL%') {
-                    errorMsg += 'Missing SUPABASE_URL. ';
-                }
-                if (!window.env.SUPABASE_ANON_KEY || window.env.SUPABASE_ANON_KEY === '%SUPABASE_ANON_KEY%') {
-                    errorMsg += 'Missing SUPABASE_ANON_KEY.';
-                }
-
-                document.getElementById('errorMessage').textContent = errorMsg;
-                return false;
-            }
-
-            try {
-                addDebugLog('🔧 Creating Supabase client...');
-                supabaseClient = window.supabase.createClient(
-                    window.env.SUPABASE_URL,
-                    window.env.SUPABASE_ANON_KEY,
-                    {
-                        auth: {
-                            autoRefreshToken: true,
-                            persistSession: true,
-                            detectSessionInUrl: true
-                        }
-                    }
-                );
-                addDebugLog('✅ Supabase client created successfully', 'success');
-                return true;
-            } catch (error) {
-                addDebugLog(`❌ Failed to initialize Supabase: ${error.message}`, 'error');
-                loadingScreen.classList.add('hidden');
-                configError.classList.remove('hidden');
-                document.getElementById('errorMessage').textContent = error.message;
-                return false;
-            }
-        }
-
-        // Check session on load
-        window.addEventListener('load', async () => {
-            addDebugLog('🚀 Page loaded, initializing...');
-            if (initSupabase()) {
-                await handleIncomingLink();
-            }
-        });
-
-        // Handle incoming password reset link
-        async function handleIncomingLink() {
-            addDebugLog('🔗 Checking URL for reset token...');
-
-            try {
-                const hashParams = new URLSearchParams(window.location.hash.substring(1));
-                const queryParams = new URLSearchParams(window.location.search);
-
-                const access_token = hashParams.get('access_token') || queryParams.get('access_token');
-                const refresh_token = hashParams.get('refresh_token') || queryParams.get('refresh_token');
-                const type = hashParams.get('type') || queryParams.get('type');
-
-                addDebugLog(`📨 URL params - type: ${type || 'none'}, has token: ${!!access_token}`);
-
-                if (access_token && type === 'recovery') {
-                    addDebugLog('🔄 Setting session from recovery token...');
-
-                    const { data, error } = await supabaseClient.auth.setSession({
-                        access_token,
-                        refresh_token
-                    });
-
-                    if (error) {
-                        addDebugLog(`❌ Session error: ${error.message}`, 'error');
-                        throw error;
-                    }
-
-                    session = data.session;
-                    accessToken = access_token;
-
-                    addDebugLog(`✅ Session set for user: ${session?.user?.email}`, 'success');
-                    showResetForm();
-
-                } else {
-                    addDebugLog('🔍 No token found, checking for existing session...');
-
-                    const { data: { session: existingSession }, error } = await supabaseClient.auth.getSession();
-
-                    if (error) throw error;
-
-                    if (existingSession) {
-                        session = existingSession;
-                        accessToken = existingSession.access_token;
-                        addDebugLog(`✅ Found existing session for: ${session?.user?.email}`, 'success');
-                        showResetForm();
-                    } else {
-                        addDebugLog('❌ No valid session found', 'error');
-                        showError(
-                            'Invalid Session',
-                            'This password reset link is invalid or has expired. Please request a new one.'
-                        );
-                    }
-                }
-            } catch (error) {
-                addDebugLog(`❌ Error handling link: ${error.message}`, 'error');
-                showError(
-                    'Authentication Error',
-                    error.message || 'Failed to verify your session. Please try again.'
-                );
-            }
-        }
-
-        // Show reset form
-        function showResetForm() {
-            addDebugLog('📝 Showing password reset form');
+        } catch (error) {
+            addDebugLog(`❌ Failed to initialize Supabase: ${error.message}`, 'error');
             loadingScreen.classList.add('hidden');
-            resetForm.classList.remove('hidden');
-
-            if (session?.user?.email) {
-                userEmailSpan.textContent = `for ${session.user.email}`;
-                addDebugLog(`👤 User: ${session.user.email}`);
-            }
-
-            newPassword.addEventListener('input', validateForm);
-            confirmPassword.addEventListener('input', validateForm);
-            newPassword.addEventListener('input', checkPasswordStrength);
+            configError.classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = error.message;
+            return false;
         }
+    }
 
-        // Show error screen
-        function showError(title, message) {
-            addDebugLog(`❌ Error: ${title} - ${message}`, 'error');
-            loadingScreen.classList.add('hidden');
-            errorScreen.classList.remove('hidden');
-            document.getElementById('errorTitle').textContent = title;
-            document.getElementById('errorMessage').textContent = message;
-        }
+    // Handle incoming password reset link
+    async function handleIncomingLink() {
+        addDebugLog('🔗 Checking URL for reset token...');
+        
+        try {
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const queryParams = new URLSearchParams(window.location.search);
 
-        // Toggle password visibility
-        function togglePassword(inputId) {
-            const input = document.getElementById(inputId);
-            input.type = input.type === 'password' ? 'text' : 'password';
-        }
+            const access_token = hashParams.get('access_token') || queryParams.get('access_token');
+            const refresh_token = hashParams.get('refresh_token') || queryParams.get('refresh_token');
+            const type = hashParams.get('type') || queryParams.get('type');
 
-        // Check password strength
-        function checkPasswordStrength() {
-            const password = newPassword.value;
-            const strengthIndicator = document.getElementById('strengthIndicator');
-            const strengthBar = document.getElementById('strengthBar');
-            const strengthText = document.getElementById('strengthText');
+            addDebugLog(`📨 URL params - type: ${type || 'none'}, has token: ${!!access_token}`);
 
-            if (password.length > 0) {
-                strengthIndicator.classList.remove('hidden');
-
-                let strength = 0;
-                if (password.length >= 8) strength += 25;
-                if (/[a-z]/.test(password)) strength += 25;
-                if (/[A-Z]/.test(password)) strength += 25;
-                if (/[0-9]/.test(password)) strength += 25;
-
-                strengthBar.style.width = strength + '%';
-
-                let color, text;
-                if (strength < 50) {
-                    color = '#ef4444';
-                    text = 'Weak';
-                } else if (strength < 75) {
-                    color = '#f59e0b';
-                    text = 'Medium';
-                } else {
-                    color = '#10b981';
-                    text = 'Strong';
-                }
-
-                strengthBar.style.backgroundColor = color;
-                strengthBar.style.height = '6px';
-                strengthText.textContent = `Password strength: ${text}`;
-                strengthText.style.color = color;
-            } else {
-                strengthIndicator.classList.add('hidden');
-            }
-
-            updateRequirements();
-        }
-
-        // Update requirement checkmarks
-        function updateRequirements() {
-            const password = newPassword.value;
-            const confirm = confirmPassword.value;
-
-            const lengthCheck = document.getElementById('lengthCheck');
-            const matchCheck = document.getElementById('matchCheck');
-
-            if (password.length >= 8) {
-                lengthCheck.classList.add('valid');
-            } else {
-                lengthCheck.classList.remove('valid');
-            }
-
-            if (password.length > 0 && password === confirm) {
-                matchCheck.classList.add('valid');
-            } else {
-                matchCheck.classList.remove('valid');
-            }
-        }
-
-        // Validate form
-        function validateForm() {
-            const password = newPassword.value;
-            const confirm = confirmPassword.value;
-            let isValid = true;
-
-            const newPasswordContainer = document.getElementById('newPasswordContainer');
-            const newPasswordError = document.getElementById('newPasswordError');
-
-            if (password.length < 8) {
-                newPasswordContainer.classList.add('error');
-                newPasswordError.textContent = 'Password must be at least 8 characters';
-                isValid = false;
-            } else {
-                newPasswordContainer.classList.remove('error');
-                newPasswordError.textContent = '';
-            }
-
-            const confirmContainer = document.getElementById('confirmPasswordContainer');
-            const confirmError = document.getElementById('confirmPasswordError');
-
-            if (confirm.length > 0 && password !== confirm) {
-                confirmContainer.classList.add('error');
-                confirmError.textContent = 'Passwords do not match';
-                isValid = false;
-            } else {
-                confirmContainer.classList.remove('error');
-                confirmError.textContent = '';
-            }
-
-            resetBtn.disabled = !isValid || password.length === 0 || confirm.length === 0;
-
-            return isValid;
-        }
-
-        // Handle password reset
-        async function handleResetPassword() {
-            if (!validateForm()) return;
-
-            try {
-                resetBtn.disabled = true;
-                resetBtn.textContent = 'Resetting...';
-                addDebugLog('🔄 Attempting password reset...');
-
-                const { error } = await supabaseClient.auth.updateUser({
-                    password: newPassword.value
+            if (access_token && type === 'recovery') {
+                addDebugLog('🔄 Setting session from recovery token...');
+                
+                const { data, error } = await supabaseClient.auth.setSession({
+                    access_token,
+                    refresh_token
                 });
 
                 if (error) {
-                    addDebugLog(`❌ Reset failed: ${error.message}`, 'error');
+                    addDebugLog(`❌ Session error: ${error.message}`, 'error');
                     throw error;
                 }
 
-                addDebugLog('✅ Password reset successful!', 'success');
-                alert('Password reset successful! You can now login with your new password.');
+                session = data.session;
+                accessToken = access_token;
+                
+                addDebugLog(`✅ Session set for user: ${session?.user?.email}`, 'success');
+                showResetForm();
 
-                await supabaseClient.auth.signOut();
-                window.location.href = '/login.html';
+            } else {
+                addDebugLog('🔍 No token found, checking for existing session...');
+                
+                const { data: { session: existingSession }, error } = await supabaseClient.auth.getSession();
 
-            } catch (error) {
-                console.error('Reset error:', error);
-                alert('Failed to reset password: ' + error.message);
-                resetBtn.disabled = false;
-                resetBtn.textContent = 'Reset Password';
+                if (error) throw error;
+
+                if (existingSession) {
+                    session = existingSession;
+                    accessToken = existingSession.access_token;
+                    addDebugLog(`✅ Found existing session for: ${session?.user?.email}`, 'success');
+                    showResetForm();
+                } else {
+                    addDebugLog('❌ No valid session found', 'error');
+                    showError(
+                        'Invalid Session',
+                        'This password reset link is invalid or has expired. Please request a new one.'
+                    );
+                }
             }
+        } catch (error) {
+            addDebugLog(`❌ Error handling link: ${error.message}`, 'error');
+            showError(
+                'Authentication Error',
+                error.message || 'Failed to verify your session. Please try again.'
+            );
+        }
+    }
+
+    // Show reset form
+    function showResetForm() {
+        addDebugLog('📝 Showing password reset form');
+        loadingScreen.classList.add('hidden');
+        resetForm.classList.remove('hidden');
+
+        if (session?.user?.email) {
+            userEmailSpan.textContent = `for ${session.user.email}`;
+            addDebugLog(`👤 User: ${session.user.email}`);
         }
 
-        // Back button
-        document.getElementById('backBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = '/login.html';
-        });
+        newPassword.addEventListener('input', validateForm);
+        confirmPassword.addEventListener('input', validateForm);
+        newPassword.addEventListener('input', checkPasswordStrength);
+    }
 
-        // Login redirect button
-        document.getElementById('loginRedirectBtn').addEventListener('click', (e) => {
-            e.preventDefault();
+    // Show error screen
+    function showError(title, message) {
+        addDebugLog(`❌ Error: ${title} - ${message}`, 'error');
+        loadingScreen.classList.add('hidden');
+        errorScreen.classList.remove('hidden');
+        document.getElementById('errorTitle').textContent = title;
+        document.getElementById('errorMessage').textContent = message;
+    }
+
+    // Toggle password visibility
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    // Check password strength
+    function checkPasswordStrength() {
+        const password = newPassword.value;
+        const strengthIndicator = document.getElementById('strengthIndicator');
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+
+        if (password.length > 0) {
+            strengthIndicator.classList.remove('hidden');
+
+            let strength = 0;
+            if (password.length >= 8) strength += 25;
+            if (/[a-z]/.test(password)) strength += 25;
+            if (/[A-Z]/.test(password)) strength += 25;
+            if (/[0-9]/.test(password)) strength += 25;
+
+            strengthBar.style.width = strength + '%';
+
+            let color, text;
+            if (strength < 50) {
+                color = '#ef4444';
+                text = 'Weak';
+            } else if (strength < 75) {
+                color = '#f59e0b';
+                text = 'Medium';
+            } else {
+                color = '#10b981';
+                text = 'Strong';
+            }
+
+            strengthBar.style.backgroundColor = color;
+            strengthBar.style.height = '6px';
+            strengthText.textContent = `Password strength: ${text}`;
+            strengthText.style.color = color;
+        } else {
+            strengthIndicator.classList.add('hidden');
+        }
+
+        updateRequirements();
+    }
+
+    // Update requirement checkmarks
+    function updateRequirements() {
+        const password = newPassword.value;
+        const confirm = confirmPassword.value;
+
+        const lengthCheck = document.getElementById('lengthCheck');
+        const matchCheck = document.getElementById('matchCheck');
+
+        if (password.length >= 8) {
+            lengthCheck.classList.add('valid');
+        } else {
+            lengthCheck.classList.remove('valid');
+        }
+
+        if (password.length > 0 && password === confirm) {
+            matchCheck.classList.add('valid');
+        } else {
+            matchCheck.classList.remove('valid');
+        }
+    }
+
+    // Validate form
+    function validateForm() {
+        const password = newPassword.value;
+        const confirm = confirmPassword.value;
+        let isValid = true;
+
+        const newPasswordContainer = document.getElementById('newPasswordContainer');
+        const newPasswordError = document.getElementById('newPasswordError');
+
+        if (password.length < 8) {
+            newPasswordContainer.classList.add('error');
+            newPasswordError.textContent = 'Password must be at least 8 characters';
+            isValid = false;
+        } else {
+            newPasswordContainer.classList.remove('error');
+            newPasswordError.textContent = '';
+        }
+
+        const confirmContainer = document.getElementById('confirmPasswordContainer');
+        const confirmError = document.getElementById('confirmPasswordError');
+
+        if (confirm.length > 0 && password !== confirm) {
+            confirmContainer.classList.add('error');
+            confirmError.textContent = 'Passwords do not match';
+            isValid = false;
+        } else {
+            confirmContainer.classList.remove('error');
+            confirmError.textContent = '';
+        }
+
+        resetBtn.disabled = !isValid || password.length === 0 || confirm.length === 0;
+
+        return isValid;
+    }
+
+    // Handle password reset
+    async function handleResetPassword() {
+        if (!validateForm()) return;
+
+        try {
+            resetBtn.disabled = true;
+            resetBtn.textContent = 'Resetting...';
+            addDebugLog('🔄 Attempting password reset...');
+
+            const { error } = await supabaseClient.auth.updateUser({
+                password: newPassword.value
+            });
+
+            if (error) {
+                addDebugLog(`❌ Reset failed: ${error.message}`, 'error');
+                throw error;
+            }
+
+            addDebugLog('✅ Password reset successful!', 'success');
+            alert('Password reset successful! You can now login with your new password.');
+
+            await supabaseClient.auth.signOut();
             window.location.href = '/login.html';
-        });
-    </script>
+
+        } catch (error) {
+            console.error('Reset error:', error);
+            alert('Failed to reset password: ' + error.message);
+            resetBtn.disabled = false;
+            resetBtn.textContent = 'Reset Password';
+        }
+    }
+
+    // Back button
+    document.getElementById('backBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '/login.html';
+    });
+
+    // Login redirect button
+    document.getElementById('loginRedirectBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '/login.html';
+    });
+
+    // Start the app by loading config
+    document.addEventListener('DOMContentLoaded', loadConfig);
+</script>
 </body>
 
 </html>

@@ -6,7 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Reset Password - App Name</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
+
+    <!-- 
+        IMPORTANT: Environment variables are injected by Vercel during build time.
+        These will be replaced with actual values from Vercel Environment Variables.
+        Do NOT edit these placeholders - they will be automatically replaced.
+    -->
+    <script>
+        // Vercel will replace these placeholders with actual environment variables
+        window.env = {
+            SUPABASE_URL: '%SUPABASE_URL%',
+            SUPABASE_ANON_KEY: '%SUPABASE_ANON_KEY%'
+        };
+    </script>
 
     <style>
         /* Your existing CSS remains exactly the same */
@@ -377,6 +389,16 @@
             color: #4b5563;
             margin-bottom: 15px;
         }
+
+        /* Debug panel styles */
+        #debugPanel {
+            font-family: monospace;
+            transition: all 0.3s ease;
+        }
+        
+        #debugPanel button:hover {
+            background-color: #6b7280 !important;
+        }
     </style>
 </head>
 
@@ -509,7 +531,7 @@
     // ENVIRONMENT VARIABLES WITH DEBUG LOGGING
     // ============================================
     
-    // Create a debug panel that shows on screen (temporary for testing)
+    // Debug panel functions (will be removed after testing)
     function addDebugLog(message, type = 'info') {
         const debugDiv = document.getElementById('debugPanel');
         if (debugDiv) {
@@ -533,15 +555,14 @@
             
             logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
             debugDiv.appendChild(logEntry);
-            
-            // Auto-scroll to bottom
             debugDiv.scrollTop = debugDiv.scrollHeight;
         }
         console.log(message);
     }
 
-    // Create debug panel in the DOM (temporary - remove after testing)
     function createDebugPanel() {
+        if (document.getElementById('debugPanel')) return;
+        
         const panel = document.createElement('div');
         panel.id = 'debugPanel';
         panel.style.position = 'fixed';
@@ -585,54 +606,27 @@
         header.appendChild(title);
         header.appendChild(closeBtn);
         panel.appendChild(header);
-        
         document.body.appendChild(panel);
-        return panel;
     }
 
-    // Initialize debug panel
+    // Initialize debug panel (comment this out after testing)
     createDebugPanel();
     addDebugLog('🚀 Debug panel initialized');
+    addDebugLog('📦 Loading environment variables from Vercel...');
 
-    // ============================================
-    // ENVIRONMENT VARIABLE LOADING
-    // ============================================
+    // Check if environment variables were properly injected by Vercel
+    addDebugLog(`🔍 SUPABASE_URL from Vercel: ${window.env.SUPABASE_URL ? '✅ Found' : '❌ Missing'}`);
+    addDebugLog(`🔍 SUPABASE_ANON_KEY from Vercel: ${window.env.SUPABASE_ANON_KEY ? '✅ Found' : '❌ Missing'}`);
+
+    // Show warning if placeholders are still present
+    if (window.env.SUPABASE_URL === '%SUPABASE_URL%') {
+        addDebugLog('⚠️ SUPABASE_URL placeholder not replaced by Vercel', 'error');
+        addDebugLog('📝 Make sure you have added SUPABASE_URL in Vercel Environment Variables', 'error');
+    }
     
-    // Try multiple methods to get environment variables
-    window.env = {
-        SUPABASE_URL: null,
-        SUPABASE_ANON_KEY: null
-    };
-
-    addDebugLog('📦 Attempting to load environment variables...');
-
-    // Method 1: Check if config.js loaded (your external config file)
-    if (typeof window.CONFIG !== 'undefined') {
-        addDebugLog('✅ Found window.CONFIG');
-        window.env.SUPABASE_URL = window.CONFIG.SUPABASE_URL;
-        window.env.SUPABASE_ANON_KEY = window.CONFIG.SUPABASE_ANON_KEY;
-    }
-
-    // Method 2: Check for direct window.__ENV (sometimes used by hosting platforms)
-    if (!window.env.SUPABASE_URL && window.__ENV) {
-        addDebugLog('✅ Found window.__ENV');
-        window.env.SUPABASE_URL = window.__ENV.SUPABASE_URL;
-        window.env.SUPABASE_ANON_KEY = window.__ENV.SUPABASE_ANON_KEY;
-    }
-
-    // Method 3: For Vercel - check if we're in development with process.env (for server-side)
-    if (!window.env.SUPABASE_URL && typeof process !== 'undefined' && process.env) {
-        addDebugLog('✅ Found process.env');
-        window.env.SUPABASE_URL = process.env.SUPABASE_URL;
-        window.env.SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-    }
-
-    // Log the results
-    addDebugLog(`📊 SUPABASE_URL: ${window.env.SUPABASE_URL ? '✅ Loaded' : '❌ Missing'}`);
-    addDebugLog(`📊 SUPABASE_ANON_KEY: ${window.env.SUPABASE_ANON_KEY ? '✅ Loaded' : '❌ Missing'}`);
-    
-    if (window.env.SUPABASE_URL) {
-        addDebugLog(`🔗 URL preview: ${window.env.SUPABASE_URL.substring(0, 30)}...`);
+    if (window.env.SUPABASE_ANON_KEY === '%SUPABASE_ANON_KEY%') {
+        addDebugLog('⚠️ SUPABASE_ANON_KEY placeholder not replaced by Vercel', 'error');
+        addDebugLog('📝 Make sure you have added SUPABASE_ANON_KEY in Vercel Environment Variables', 'error');
     }
 
     // DOM Elements
@@ -656,24 +650,13 @@
         const key = window.env.SUPABASE_ANON_KEY;
         
         // Check if variables are missing
-        if (!url) {
-            addDebugLog('❌ SUPABASE_URL is missing', 'error');
+        if (!url || url === '%SUPABASE_URL%') {
+            addDebugLog('❌ SUPABASE_URL is missing or not replaced by Vercel', 'error');
             return false;
         }
         
-        if (!key) {
-            addDebugLog('❌ SUPABASE_ANON_KEY is missing', 'error');
-            return false;
-        }
-        
-        // Check for placeholders
-        if (url.includes('__SUPABASE_URL__') || url.includes('YOUR_SUPABASE_URL')) {
-            addDebugLog('❌ SUPABASE_URL is still a placeholder', 'error');
-            return false;
-        }
-        
-        if (key.includes('__SUPABASE_ANON_KEY__') || key.includes('YOUR_SUPABASE_ANON_KEY')) {
-            addDebugLog('❌ SUPABASE_ANON_KEY is still a placeholder', 'error');
+        if (!key || key === '%SUPABASE_ANON_KEY%') {
+            addDebugLog('❌ SUPABASE_ANON_KEY is missing or not replaced by Vercel', 'error');
             return false;
         }
         
@@ -697,9 +680,16 @@
         if (!validateEnv()) {
             loadingScreen.classList.add('hidden');
             configError.classList.remove('hidden');
-            document.getElementById('errorMessage').textContent = 
-                'Configuration Error: ' + 
-                (!window.env.SUPABASE_URL ? 'Missing Supabase URL' : 'Missing Supabase Key');
+            
+            let errorMsg = 'Configuration Error: ';
+            if (!window.env.SUPABASE_URL || window.env.SUPABASE_URL === '%SUPABASE_URL%') {
+                errorMsg += 'Missing SUPABASE_URL. ';
+            }
+            if (!window.env.SUPABASE_ANON_KEY || window.env.SUPABASE_ANON_KEY === '%SUPABASE_ANON_KEY%') {
+                errorMsg += 'Missing SUPABASE_ANON_KEY.';
+            }
+            
+            document.getElementById('errorMessage').textContent = errorMsg;
             return false;
         }
         

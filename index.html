@@ -436,7 +436,6 @@
             <h2 class="error-title" id="errorTitle">Session Expired</h2>
             <p class="error-message" id="errorMessage">Your password reset link has expired. Please request a new one.
             </p>
-            <a href="/login" class="login-button" id="loginRedirectBtn">Go to Login</a>
         </div>
 
         <!-- Main Reset Password Form -->
@@ -721,8 +720,8 @@
                 } else {
                     log('No valid session found', 'error');
                     showError(
-                        'Invalid Session',
-                        'This password reset link is invalid or has expired. Please request a new one.'
+                        'Password Reset Completed',
+                        'Your password reset is complete. Open your application to log in with your new password.'
                     );
                 }
             }

@@ -620,8 +620,6 @@
     function showConfigError() {
         loadingScreen.classList.add('hidden');
         configError.classList.remove('hidden');
-        document.getElementById('errorMessage').textContent = 
-            'Failed to load configuration. Please ensure environment variables are set in Vercel.';
     }
 
     // ============================================
@@ -641,9 +639,15 @@
         }
         
         // Add input listeners
-        newPassword.addEventListener('input', validateForm);
-        confirmPassword.addEventListener('input', validateForm);
-        newPassword.addEventListener('input', checkPasswordStrength);
+        newPassword.addEventListener('input', () => {
+            checkPasswordStrength();
+            updateRequirements();
+            validateForm();
+        });
+        confirmPassword.addEventListener('input', () => {
+            updateRequirements();
+            validateForm();
+        });
     }
 
     // Initialize Supabase
@@ -668,7 +672,6 @@
             log(`Failed to initialize Supabase: ${error.message}`, 'error');
             loadingScreen.classList.add('hidden');
             configError.classList.remove('hidden');
-            document.getElementById('errorMessage').textContent = error.message;
             return false;
         }
     }
@@ -796,11 +799,9 @@
         } else {
             strengthIndicator.classList.add('hidden');
         }
-        
-        updateRequirements();
     }
 
-    // Update requirement checkmarks
+    // Update requirement checkmarks - FIXED: Properly checks password match
     function updateRequirements() {
         const password = newPassword.value;
         const confirm = confirmPassword.value;
@@ -812,7 +813,7 @@
             lengthCheck.classList.remove('valid');
         }
         
-        // Match check - FIXED: Now properly checks when passwords match
+        // Match check - Check if passwords match AND password is not empty
         const passwordsMatch = password.length > 0 && password === confirm;
         
         if (passwordsMatch) {
@@ -837,14 +838,18 @@
         }
     }
 
-    // Validate form
+    // Validate form - FIXED: Properly validates password match
     function validateForm() {
         const password = newPassword.value;
         const confirm = confirmPassword.value;
         let isValid = true;
         
         // Validate new password
-        if (password.length < 8) {
+        if (password.length === 0) {
+            newPasswordContainer.classList.remove('error');
+            newPasswordError.textContent = '';
+            isValid = false;
+        } else if (password.length < 8) {
             newPasswordContainer.classList.add('error');
             newPasswordError.textContent = 'Password must be at least 8 characters';
             isValid = false;
@@ -853,10 +858,14 @@
             newPasswordError.textContent = '';
         }
         
-        // Validate confirm password - FIXED: Now properly validates match
+        // Validate confirm password - Check match condition properly
         const passwordsMatch = password.length > 0 && password === confirm;
         
-        if (!passwordsMatch && confirm.length > 0) {
+        if (confirm.length === 0) {
+            confirmPasswordContainer.classList.remove('error');
+            confirmPasswordError.textContent = '';
+            isValid = false;
+        } else if (!passwordsMatch) {
             confirmPasswordContainer.classList.add('error');
             confirmPasswordError.textContent = 'Passwords do not match';
             isValid = false;
@@ -866,14 +875,20 @@
         }
         
         // Enable/disable button based on validation
-        resetBtn.disabled = !(password.length >= 8 && passwordsMatch);
+        const isPasswordValid = password.length >= 8;
+        const isConfirmValid = passwordsMatch;
         
-        return isValid;
+        resetBtn.disabled = !(isPasswordValid && isConfirmValid);
+        
+        return resetBtn.disabled === false;
     }
 
     // Handle password reset
     async function handleResetPassword() {
-        if (!validateForm()) return;
+        if (!validateForm()) {
+            log('Form validation failed', 'error');
+            return;
+        }
 
         try {
             resetBtn.disabled = true;
